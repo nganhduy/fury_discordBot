@@ -1,0 +1,24 @@
+{
+  "name": "botmusic",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "engines": {
+    "node": "12.13.1"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "hehe",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^11.6.4",
+    "nodemon": "^2.0.7",
+    "opusscript": "0.0.7",
+    "yt-playlist": "0.0.2",
+    "ytdl": "^1.4.1",
+    "ytdl-core": "^4.4.4",
+    "ytsearcher": "^1.2.3"
+  }
+}
