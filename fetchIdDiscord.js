@@ -12,4 +12,4 @@ client.on('ready', () => {
     console.log(this.ListID)
 });
 
-client.login('NjE5OTMxNTk2NDUxMjE3NDIw.XXPaSg.71vyjPWimRgE58pVYUCPY7Xu9Qc');
+client.login(''); //your token

@@ -1,3 +1,3 @@
 exports.PREFIX = "'";
-exports.TOKEN = "MTk3MjY4NTgzNDg5ODYzNjgy.YAHF8A.rCXWhU-1IeCn0tEX0GdagxVOQBw"
-exports.USERID = "197268583489863682"
+exports.TOKEN = "" //token
+exports.USERID = "" //user id

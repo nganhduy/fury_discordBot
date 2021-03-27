@@ -16,9 +16,9 @@
     "discord.js": "^11.6.4",
     "nodemon": "^2.0.7",
     "opusscript": "0.0.7",
-    "yt-playlist": "0.0.2",
+    "yt-playlist-scraper": "^1.1.0",
     "ytdl": "^1.4.1",
-    "ytdl-core": "^4.4.4",
+    "ytdl-core": "^4.5.0",
     "ytsearcher": "^1.2.3"
   }
 }

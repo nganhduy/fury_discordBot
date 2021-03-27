@@ -3,7 +3,8 @@ const { Util } = require('discord.js');
 const ytdl = require('ytdl-core');
 const PACKAGE = require('./package.json');
 const { YTSearcher } = require('ytsearcher');
-const searcher = new YTSearcher('AIzaSyBHFEL97baKGiCmAYSaae8QCtTjKvrTJPY');
+const searcher = new YTSearcher(''); // your youtube api 
+const listvideos = require('yt-playlist-scraper');
 const { ListID } = require('./fetchIdDiscord.js');
 const {
     PREFIX,
@@ -54,11 +55,26 @@ client.on('message', async message => {
             if (vc && vc.channel.id != message.member.voiceChannel.id) return message.channel.send(`You must be in the same voice channel as me.`);
             // ------------------- CHECK ----------------------
             
-            
-            await playFunction(message, QUERY, voiceChannel);
-            
-            
+            try{
+                if (QUERY.startsWith("https://www.youtube.com/playlist?list=")) {
+                    playlistID = QUERY.split("https://www.youtube.com/playlist?list=");
+                    console.log(playlistID[1])
+                    const videos = []
+                    const video = await listvideos(playlistID[1])
+                    video.videos.map(song => videos.push(song.id));
+                    console.log(videos);
+                    message.channel.send(`Adding songs..`);
+                    for(var i = 0; i < videos.length ; i++){
+                        var querylist = videos[i];
+                        await playFunction2(message, querylist, voiceChannel)
+                    }
+                    message.channel.send(`🍚`);
 
+                } else
+                    await playFunction(message, QUERY, voiceChannel);
+            }catch (err){
+                return err;
+            }
             return;
         }
         if (command == 'np' || command == 'np') {
@@ -107,6 +123,70 @@ client.on('message', async message => {
 
 });
 
+async function playFunction2(message, QUERY, voiceChannel) {
+    const serverQueue = queue.get(message.guild.id);
+    const searchResult = await searcher.search(QUERY, { type: 'video' });
+    const page = searchResult.currentPage;
+    const videoEntry = page[0];
+    url = videoEntry.url
+    const songInfo = await ytdl.getInfo(url.replace(/<(.+)>/g, '$1'));
+	const song = {
+        id: songInfo.videoDetails.video_id,
+        title: Util.escapeMarkdown(songInfo.videoDetails.title),
+        url: songInfo.videoDetails.video_url
+    };
+    // ------------------- PUSH SONG ----------------------
+
+    
+    if (!serverQueue){
+        const queueConstruct = {
+            textChannel: message.channel,
+            voiceChannel: voiceChannel,
+            connection: null,
+            songs: [],
+            playing: true
+        };
+        queue.set(message.guild.id, queueConstruct);
+        queueConstruct.songs.push(song);
+        
+        const play = async song => {
+            const svQueue = queue.get(message.guild.id);
+            if (!song) {
+                svQueue.voiceChannel.leave();
+                svQueue.textChannel.send(`. hết`);
+                loopQ = false;
+                queue.delete(message.guild.id);
+                return;
+            }
+            const dispatcher = svQueue.connection.playStream(ytdl(song.url))
+                .on('end', () => {
+                    if(loopQ){
+                        svQueue.songs.push(svQueue.songs[0])
+                    }
+                    svQueue.songs.shift();
+                    play(svQueue.songs[0]);
+                })
+                .on('error', error => console.error(error));
+                svQueue.textChannel.send(`🎶 Start playing: **${song.title}**`);
+                
+        };
+        try {
+            const connection = await voiceChannel.join();
+            queueConstruct.connection = connection;
+            play(queueConstruct.songs[0]);
+        } catch (error) {
+            console.error(`I could not join the voice channel: ${error}`);
+            queue.delete(message.guild.id);
+            return message.channel.send(`I could not join the voice channel: ${error}`);
+        }
+    }else{
+        serverQueue.songs.push(song);
+        console.log(serverQueue.songs);
+    }
+};
+
+
+
 
 async function playFunction(message, QUERY, voiceChannel) {
     const serverQueue = queue.get(message.guild.id);
@@ -146,7 +226,7 @@ async function playFunction(message, QUERY, voiceChannel) {
             const dispatcher = svQueue.connection.playStream(ytdl(song.url))
                 .on('end', () => {
                     if(loopQ){
-                        svQueue.songs.push(songs[0])
+                        svQueue.songs.push(svQueue.songs[0])
                     }
                     svQueue.songs.shift();
                     play(svQueue.songs[0]);
